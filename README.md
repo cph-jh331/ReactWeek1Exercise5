@@ -1,5 +1,5 @@
 # ReactWeek1Exercise5
-react exercise todolist instead of shoppinglist
+react exercise shoppinglist instead of todolist
 ## How to test
 * Clone the project
 * npm install
