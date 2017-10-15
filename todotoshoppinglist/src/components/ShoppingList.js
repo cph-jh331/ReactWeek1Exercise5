@@ -3,45 +3,70 @@ import React, { Component } from 'react';
 class ShoppingList extends Component {
     constructor(props) {
         super(props);
-        this.state = { list: [] };
+        this.state = { items: [] };
     }
 
-    addToList = e => {
+    componentDidMount() {
+        const iFacade = this.props.itemFacade;
+        iFacade.setObserver(this.listUpdater);
+        iFacade.getAllItems();
+    }
+
+    listUpdater = data => {
+        this.setState({ items: data });
+    }
+
+    handleAddItem = e => {
         e.preventDefault();
-        let item = this.refs.inputField.value;
-        if (item !== "") {
-            let list = this.state.list;
-            list.push(item);
-            this.setState({ list });
+        let itemValue = this.refs.inputField.value;
+        if (itemValue !== "") {
+            let item = { value: itemValue };
+            this.props.itemFacade.addItem(item);
+            this.refs.inputField.value = "";
+            this.props.itemFacade.getAllItems();
+        } else {
+            alert("enter something... like mælk");
         }
     }
 
-    removeFromList = e => {
-        e.preventDefault();
-        let item = e.target.innerText;
-        let list = this.state.list;
-        let indexOfItem = list.indexOf(item);
-        list.splice(indexOfItem, 1);
-        this.setState({ list })
+    removeItemUpdater = () => {
+        this.props.itemFacade.getAllItems();
     }
 
-    listItems = () => this.state.list.map(
-        item => <li key={item}><a href="#mennej" key={item} onClick={this.removeFromList}>{item}</a></li>
+    handleRemoveItem = e => {
+        e.preventDefault();
+        let item = this.findItemInState(e.target.innerText);
+        if (item) {
+            this.props.itemFacade.removeItem(item, this.removeItemUpdater);
+        }
+    }
+
+    findItemInState = (iValue) => {
+        for (let item of this.state.items) {
+            if (item.value === iValue) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    listItems = () => this.state.items.map(
+        item => <a ref="#mennej" className="list-group-item" key={item.id} onClick={this.handleRemoveItem}>{item.value}</a>
     );
 
     render() {
         return (
             <div>
-                <h3>Shopping list</h3>
-                <form>
-                    <label>Enter item to add to the shopping list</label><br />
-                    <input type="text" ref="inputField" />
-                    <button onClick={this.addToList}>Add to list</button>
+                <form onSubmit={this.handleAddItem}>
+                    <p>Enter your item to add it to the list</p>
+                    <input className="form-control" type="text" ref="inputField" />
                 </form>
-                <h3> list </h3>
-                <ul>
-                    {this.listItems()}
-                </ul>
+                <div className="jumbotron">
+                    <div className="list-group">
+                        {this.listItems()}
+                    </div>
+                    <p>click on an item to remove it.</p>
+                </div>
 
             </div>
         );
